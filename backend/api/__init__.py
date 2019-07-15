@@ -9,7 +9,7 @@ from backend.model import get_db, ObjectId, jsonify
 @check_argument("uid")
 def get_user_groups(uid):
     db = get_db()
-    print(uid)
+    # print(uid)
     pipeline = [{
         "$match": {
             "uid": ObjectId(uid)
@@ -32,3 +32,4 @@ def get_user_groups(uid):
         data = data[0]["groups"]
     # print(jsonify(data))
     return jsonify(data)
+

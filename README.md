@@ -9,3 +9,6 @@ pip install -e .
 nodeenv -p
 source env/bin/activate
 ```
+## Restore DB
+
+`mongorestore dump/`

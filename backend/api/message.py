@@ -1,5 +1,5 @@
 from backend import app
-from backend.utils import check_argument, form_argument
+from backend.utils import check_argument, form_argument, query_argument
 from backend.model import get_db, ObjectId, jsonify
 
 
@@ -7,11 +7,17 @@ from backend.model import get_db, ObjectId, jsonify
 @form_argument
 @check_argument("uid")
 @check_argument("gid")
-# @check_argument("outercypher")
-# @check_argument("noncestr")
-# @check_argument("ephermeralpubkey")
-# def post_message(uid, gid, outercypher, noncestr, ephermeralpubkey):
-#     print(uid, gid, outercypher, noncestr, ephermeralpubkey)
-def post_message(uid, gid):
-    print(uid, gid)
-    return jsonify([uid, gid])
+@check_argument("outercypher")
+@check_argument("noncestr")
+@check_argument("ephermeralpubkey")
+def post_message(uid, gid, outercypher, noncestr, ephermeralpubkey):
+    print(uid, gid, outercypher, noncestr, ephermeralpubkey)
+    db = get_db()
+    db.messsges.insert_one({
+        'uid': ObjectId(uid),
+        'gid': ObjectId(gid),
+        'outercypher': outercypher,
+        'noncestr': noncestr,
+        'ephermeralpubkey': ephermeralpubkey,
+    })
+    return jsonify({'status': "ok"})

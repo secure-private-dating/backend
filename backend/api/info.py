@@ -44,6 +44,17 @@ def get_user(uid):
     return jsonify(data)
 
 
+@app.route('/api/group')
+@query_argument
+@check_argument("gid")
+def get_group(gid):
+    db = get_db()
+    data = db.groups.find_one({
+        '_id': ObjectId(gid)
+    })
+    return jsonify(data)
+
+
 @app.route('/api/group_users')
 @query_argument
 @check_argument("gid")

@@ -28,7 +28,7 @@ def post_message(uid, gid, outercypher, noncestr, ephermeralpubkey):
 @check_argument("uid")
 @check_argument("gid")
 def get_message(uid, gid, from_id=''):
-    print(uid, gid)
+    # print(uid, gid)
     db = get_db()
     query = {
         'gid': ObjectId(gid),

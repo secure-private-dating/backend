@@ -11,9 +11,9 @@ from backend.model import get_db, ObjectId, jsonify
 @check_argument("noncestr")
 @check_argument("ephermeralpubkey")
 def post_message(uid, gid, outercypher, noncestr, ephermeralpubkey):
-    print(uid, gid, outercypher, noncestr, ephermeralpubkey)
+    # print(uid, gid, outercypher, noncestr, ephermeralpubkey)
     db = get_db()
-    db.messsges.insert_one({
+    db.messages.insert_one({
         'uid': ObjectId(uid),
         'gid': ObjectId(gid),
         'outercypher': outercypher,
@@ -21,3 +21,24 @@ def post_message(uid, gid, outercypher, noncestr, ephermeralpubkey):
         'ephermeralpubkey': ephermeralpubkey,
     })
     return jsonify({'status': "ok"})
+
+
+@app.route('/api/message', methods=['GET'])
+@query_argument
+@check_argument("uid")
+@check_argument("gid")
+def get_message(uid, gid, from_id=''):
+    print(uid, gid)
+    db = get_db()
+    query = {
+        'gid': ObjectId(gid),
+        'uid': {'$ne': ObjectId(uid)},
+    }
+    if from_id:
+        query['_id'] = {'$gt': ObjectId(from_id)}
+    projection = {
+        'uid': 0,
+        'gid': 0
+    }
+    data = db.messages.find(query, projection)
+    return jsonify(list(data))

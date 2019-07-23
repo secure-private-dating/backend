@@ -1,6 +1,8 @@
 from backend import app
-from backend.utils import check_argument, form_argument, query_argument
+from backend.utils import check_argument, form_argument, query_argument, check_permission
 from backend.model import get_db, ObjectId, jsonify
+
+from flask import session
 
 
 @app.route('/api/message', methods=['POST'])
@@ -24,12 +26,14 @@ def post_message(uid, gid, outercypher, noncestr, ephermeralpubkey):
 
 
 @app.route('/api/message', methods=['GET'])
+@check_permission
 @query_argument
 @check_argument("uid")
 @check_argument("gid")
 def get_message(uid, gid, from_id=''):
     # print(uid, gid)
     db = get_db()
+    uid = session['uid']
     query = {
         'gid': ObjectId(gid),
         'uid': {'$ne': ObjectId(uid)},

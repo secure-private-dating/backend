@@ -2,6 +2,27 @@ from functools import wraps
 from flask import session, abort, redirect, url_for, request
 
 
+def check_permission(func):
+    """Check permission."""
+    @wraps(func)
+    def decorator(*args, **kwargs):
+        if not session.get("openid"):
+            if request.method == "GET":
+                # Redirect to Login
+                abort(403)
+                # return redirect(url_for("show_login"))
+            if request.method == "POST":
+                # HTTP 403 Permission Denied
+                abort(403)
+            else:
+                # HTTP 405 Method Not Allowed
+                abort(405)
+        return func(*args, **kwargs)
+
+    return decorator
+
+
+
 def check_argument(key):
     """Check argument."""
 

@@ -1,8 +1,9 @@
 from backend import app
 from backend.utils import check_argument, form_argument, query_argument, check_permission
-from backend.model import get_db, ObjectId, jsonify
+from backend.model import get_db, ObjectId, jsonify, db_get_user_groups
 
 from flask import session
+import json
 
 
 @app.route('/api/message', methods=['POST'])
@@ -25,24 +26,26 @@ def post_message(uid, gid, outercypher, noncestr, ephermeralpubkey):
     return jsonify({'status': "ok"})
 
 
-@app.route('/api/message', methods=['GET'])
+@app.route('/api/pull_message', methods=['POST'])
 @check_permission
-@query_argument
-@check_argument("uid")
-@check_argument("gid")
-def get_message(uid, gid, from_id=''):
-    # print(uid, gid)
+@form_argument
+def get_message(latest_message_id='{}'):
+    latest_message_id = json.loads(latest_message_id)
     db = get_db()
     uid = session['uid']
-    query = {
-        'gid': ObjectId(gid),
-        'uid': {'$ne': ObjectId(uid)},
-    }
-    if from_id:
-        query['_id'] = {'$gt': ObjectId(from_id)}
-    projection = {
-        'uid': 0,
-        'gid': 0
-    }
-    data = db.messages.find(query, projection)
-    return jsonify(list(data))
+    data = {}
+    groups = db_get_user_groups(uid)
+    for group in groups:
+        gid = str(group['_id'])
+        query = {
+            'gid': ObjectId(gid),
+            'uid': {'$ne': ObjectId(uid)},
+        }
+        if gid in latest_message_id:
+            query['_id'] = {'$gt': ObjectId(latest_message_id[gid])}
+        projection = {
+            'uid': 0,
+            'gid': 0,
+        }
+        data[gid] = list(db.messages.find(query, projection))
+    return jsonify(data)

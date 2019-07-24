@@ -1,5 +1,5 @@
 from backend import app
-from backend.utils import check_argument, query_argument
+from backend.utils import check_argument, form_argument
 from backend.model import get_db, jsonify
 
 import requests
@@ -7,10 +7,13 @@ import json
 from flask import session
 
 
-@app.route('/user/login')
-@query_argument
+@app.route('/user/login', methods=['POST'])
+@form_argument
 @check_argument("code")
-def login(code):
+@check_argument("name")
+@check_argument("avatar")
+@check_argument("gender")
+def login(code, name, avatar, gender):
     params = {
         'appid': app.config['APP_ID'],
         'secret': app.config['APP_SECRET'],
@@ -26,12 +29,23 @@ def login(code):
             # register
             db.users.insert({
                 'openid': data['openid'],
-                'name': '',
-                'avatar': '',
+                'name': name,
+                'avatar': avatar,
+                'gender': gender,
                 'publicKey': '',
             })
             row = db.users.find_one({'openid': data['openid']})
-
+        elif name != row['name'] or avatar != row['avatar'] or gender != row['gender']:
+            # update user info
+            db.users.update({
+                '_id': row['_id']
+            }, {
+                '$set': {
+                    'name': name,
+                    'avatar': avatar,
+                    'gender': gender,
+                }
+            })
         session['openid'] = data['openid']
         session['session_key'] = data['session_key']
         session['uid'] = row['_id']

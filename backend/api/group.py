@@ -5,7 +5,7 @@ from backend.model import get_db, jsonify, db_get_user_groups
 from gridfs import GridFS
 import hashlib
 import os
-from flask import session, send_file, make_response
+from flask import session, make_response
 from bson import ObjectId
 from mimetypes import guess_type
 
@@ -35,16 +35,37 @@ def create_group(avatar, name):
         image_obj = fs.put(data, filename=filename, content_type=avatar.content_type)
     else:
         image_obj = image_obj._id
-    print(image_obj)
+    # print(image_obj)
     gid = db.groups.insert({
         'name': name,
         'avatar': image_obj,
     })
     db.group_user.insert({
-        'uid': session['uid'],
+        'uid': ObjectId(session['uid']),
         'gid': gid,
     })
     return 'ok'
+
+
+@app.route('/group/join')
+@check_permission
+@query_argument
+@check_argument("gid")
+def join_group(gid):
+    db = get_db()
+    uid = ObjectId(session['uid'])
+    gid = ObjectId(gid)
+    group = db.groups.find_one({'_id': gid})
+    found = db.group_user.find_one({
+        'uid': uid,
+        'gid': gid,
+    })
+    if group and not found:
+        db.group_user.insert({
+            'uid': uid,
+            'gid': gid,
+        })
+        return 'ok'
 
 
 @app.route('/group/avatar/<string:object_id>')
@@ -52,11 +73,10 @@ def get_group_avatar(object_id):
     db = get_db()
     fs = GridFS(db, collection="images")
     image_obj = fs.find_one({"_id": ObjectId(object_id)})
-    print(image_obj.content_type)
+    # print(image_obj.content_type)
     response = make_response(image_obj.read())
     content_type = image_obj.content_type
     if not content_type:
         content_type, _ = guess_type(image_obj.filename)
     response.mimetype = content_type
     return response
-

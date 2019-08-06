@@ -30,7 +30,7 @@ def post_message(uid, gid, outercypher, noncestr, ephermeralpubkey):
 @check_permission
 @form_argument
 def get_message(latest_message_id='{}'):
-    latest_message_id = json.loads(latest_message_id)
+    latest_message_dict = json.loads(latest_message_id)
     db = get_db()
     uid = session['uid']
     data = {}
@@ -41,8 +41,8 @@ def get_message(latest_message_id='{}'):
             'gid': ObjectId(gid),
             'uid': {'$ne': ObjectId(uid)},
         }
-        if gid in latest_message_id:
-            query['_id'] = {'$gt': ObjectId(latest_message_id[gid])}
+        if gid in latest_message_dict:
+            query['_id'] = {'$gt': ObjectId(latest_message_dict[gid])}
         projection = {
             'uid': 0,
             'gid': 0,

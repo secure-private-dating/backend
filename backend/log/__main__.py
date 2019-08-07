@@ -13,7 +13,7 @@ while True:
     if last_message_id:
         query['_id'] = {'$gt': last_message_id}
     result = list(db.messages.find(query))
-    if result:
+    for row in result:
         pprint(result)
-        last_message_id = result[-1]['_id']
+        last_message_id = row['_id']
     time.sleep(1)

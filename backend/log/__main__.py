@@ -14,6 +14,6 @@ while True:
         query['_id'] = {'$gt': last_message_id}
     result = list(db.messages.find(query))
     for row in result:
-        pprint(result)
+        pprint(row)
         last_message_id = row['_id']
     time.sleep(1)
